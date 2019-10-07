@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Qc.MeadminSdk.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Qc.MeadminSdk.Sample
         /// 获取后台所有模块
         /// </summary>
         /// <returns></returns>
-        public static List<CustomBackendModuleModel> GetBackendAllModules<T>() where T : ControllerBase
+        public static List<MeadminModuleModel> GetBackendAllModules<T>() where T : ControllerBase
         {
             Assembly assembly = Assembly.GetEntryAssembly();
             var types = assembly.GetTypes()
@@ -21,19 +22,19 @@ namespace Qc.MeadminSdk.Sample
                                 .Where(type => typeof(T).IsAssignableFrom(type))
                                 .OrderBy(type => type.GetCustomAttribute<MeadminModuleAttribute>()?.Order)
                                 .ToList();
-            var dics = new List<CustomBackendModuleModel>();
+            var dics = new List<MeadminModuleModel>();
             foreach (var type in types)
             {
                 var members = type.GetMethods();
-                var moduleList = new List<BackendModuleModel>();
+                var moduleList = new List<MeadminPageModel>();
                 foreach (var member in members)
                 {
                     if (!typeof(IActionResult).IsAssignableFrom(member.ReturnType))
                         continue;
-                    var moduleAttr = member.GetCustomAttribute<PermissionAttribute>();
+                    var moduleAttr = member.GetCustomAttribute<MeadminPermissionAttribute>();
                     if (moduleAttr == null)
                         continue;
-                    moduleList.Add(new BackendModuleModel(
+                    moduleList.Add(new MeadminPageModel(
                         moduleAttr.ModuleName,
                         moduleAttr.ModuleCode,
                         moduleAttr.IsPage,
@@ -50,7 +51,7 @@ namespace Qc.MeadminSdk.Sample
                 }
                 else
                 {
-                    dics.Add(new CustomBackendModuleModel()
+                    dics.Add(new MeadminModuleModel()
                     {
                         ModuleName = moduleName,
                         ModuleIcon = mafaAttr?.IconName,
@@ -64,10 +65,10 @@ namespace Qc.MeadminSdk.Sample
         /// 获取后台生成菜单
         /// </summary>
         /// <returns></returns>
-        public static List<BackendMenuModel> GetBackendAllMenus()
+        public static List<MeadminMenuModel> GetBackendAllMenus()
         {
             var modules = GetBackendAllModules<ControllerBase>();
-            List<BackendMenuModel> list = new List<BackendMenuModel>();
+            List<MeadminMenuModel> list = new List<MeadminMenuModel>();
             string defaultMenuIcon = "el-icon-menu";
 
             foreach (var item in modules)
@@ -76,18 +77,18 @@ namespace Qc.MeadminSdk.Sample
                 {
                     list.AddRange(item.ModuleList
                         .Where(s => s.IsPage)
-                        .Select(s => new BackendMenuModel(s)
+                        .Select(s => new MeadminMenuModel(s)
                         {
                             MenuIcon = s.ModuleIcon ?? defaultMenuIcon,
                         }));
                 }
                 else
                 {
-                    var menu = new BackendMenuModel()
+                    var menu = new MeadminMenuModel()
                     {
                         MenuName = item.ModuleName,
                         MenuIcon = item.ModuleIcon ?? defaultMenuIcon,
-                        Children = item.ModuleList.Where(s => s.IsPage).ToList().Select(e => new BackendMenuModel(e)).ToList()
+                        Children = item.ModuleList.Where(s => s.IsPage).ToList().Select(e => new MeadminMenuModel(e)).ToList()
                     };
                     list.Add(menu);
                 }

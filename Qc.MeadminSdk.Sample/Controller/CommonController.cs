@@ -20,7 +20,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpGet]
         [Route("home")]
-        [Permission("home", "控制台", true)]
+        [MeadminPermission("home", "控制台", true)]
         public IActionResult Home()
         {
             return Ok();
@@ -31,7 +31,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpGet]
         [Route("dayinfo")]
-        [RelyPermission("home")]
+        [MeadminRelyPermission("home")]
         public IActionResult GetDayAddedInfo()
         {
             Dictionary<string, string> dics = new Dictionary<string, string>();
@@ -48,7 +48,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpGet]
         [Route("envinfo")]
-        [RelyPermission("home")]
+        [MeadminRelyPermission("home")]
         public IActionResult GetEnvironmentInfo()
         {
             List<KeyValuePair<string, object>> infoList = new List<KeyValuePair<string, object>>();

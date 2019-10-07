@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace Qc.MeadminSdk
+namespace Qc.MeadminSdk.Models
 {
+
     /// <summary>
     /// 系统信息模型
     /// </summary>
-    public class SystemInfoModel
+    public class MeadminSystemInfoModel
     {
         /// <summary>
         /// 登录名
@@ -21,7 +21,7 @@ namespace Qc.MeadminSdk
         /// <summary>
         /// 菜单
         /// </summary>
-        public List<BackendMenuModel> Menus { get; set; }
+        public List<MeadminMenuModel> Menus { get; set; }
         /// <summary>
         /// 模块
         /// </summary>

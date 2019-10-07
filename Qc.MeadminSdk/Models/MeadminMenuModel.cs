@@ -1,42 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace Qc.MeadminSdk
+namespace Qc.MeadminSdk.Models
 {
-    public class CustomBackendModuleModel
-    {
-        public string ModuleName { get; set; }
-        public string ModuleIcon { get; set; }
-        public List<BackendModuleModel> ModuleList { get; set; }
-    }
-    public class BackendModuleModel
-    {
-        public BackendModuleModel(string moduleName, string moduleCode, bool isPage, string moduleIcon)
-        {
-            ModuleName = moduleName;
-            ModuleCode = moduleCode;
-            IsPage = isPage;
-            ModuleIcon = moduleIcon;
-        }
 
-        public string ModuleCode { get; set; }
-        public bool IsPage { get; set; }
-        public string ModuleName { get; set; }
-        public string ModuleIcon { get; set; }
-    }
     /// <summary>
     /// 系统菜单模型
     /// </summary>
-    public class BackendMenuModel
+    public class MeadminMenuModel
     {
-        public BackendMenuModel()
+        public MeadminMenuModel()
         {
             MenuId = Guid.NewGuid().ToString("N");
         }
-        public BackendMenuModel(BackendModuleModel model)
+        public MeadminMenuModel(MeadminPageModel model)
         {
             MenuName = model.ModuleName;
             MenuCode = model.ModuleCode;
@@ -66,6 +44,6 @@ namespace Qc.MeadminSdk
         /// <summary>
         /// 下级菜单
         /// </summary>
-        public List<BackendMenuModel> Children { get; set; }
+        public List<MeadminMenuModel> Children { get; set; }
     }
 }

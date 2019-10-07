@@ -13,14 +13,19 @@ using Microsoft.AspNetCore.Builder;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using System.Reflection;
+using Qc.MeadminSdk.Models;
 
 namespace Qc.MeadminSdk
 {
+    /// <summary>
+    /// MeadminMiddleware
+    /// </summary>
     public class MeadminMiddleware
     {
         private const string EmbeddedFileNamespace = "Qc.MeadminSdk.jslibs";
         private readonly MeadminOptions _options;
         private readonly StaticFileMiddleware _staticFileMiddleware;
+        private readonly RequestDelegate _next;
         public MeadminMiddleware(
             RequestDelegate next,
             IOptions<MeadminOptions> options,
@@ -28,36 +33,27 @@ namespace Qc.MeadminSdk
             ILoggerFactory loggerFactory)
         {
             _options = options.Value;
+            _next = next;
             _staticFileMiddleware = CreateStaticFileMiddleware(next, hostingEnv, loggerFactory);
         }
-        SystemInfoModel _systemInfo;
+        MeadminSystemInfoModel _systemInfo;
         public async Task Invoke(HttpContext httpContext)
         {
             var httpMethod = httpContext.Request.Method.ToUpper();
             var path = httpContext.Request.Path.Value;
             var routePrefix = _options.RoutePrefix;
-            if (httpMethod != "GET" || path.StartsWith($"/{routePrefix}") == false)
+            var _method = httpContext.Request.Method.ToLower();
+            var _path = httpContext.Request.PathBase.Value + httpContext.Request.Path.Value;
+            var _routePrefix = _options.RoutePrefix ?? string.Empty;
+            if (httpMethod != "GET" || path.StartsWith($"/{routePrefix}") == false || path == _options.LoginPath)
             {
-                await _staticFileMiddleware.Invoke(httpContext);
+                await _next(httpContext);
                 return;
             }
-            else if (path == _options.LoginPath)
+            _systemInfo = _options.AuthHandler(httpContext);
+            if (_systemInfo == null || string.IsNullOrEmpty(_systemInfo.AuthName) || string.IsNullOrEmpty(_systemInfo.Modules))
             {
-                await _staticFileMiddleware.Invoke(httpContext);
-                return;
-            }
-            _systemInfo = BuilderExtensions.AuthHandler(httpContext);
-            if (string.IsNullOrEmpty(routePrefix) ? (path == "/start.html") : (path == $"/{routePrefix}/start.html"))
-            {
-                await RespondWithHtml(httpContext.Response, "start.html");
-                return;
-            }
-            else if (_systemInfo == null || string.IsNullOrEmpty(_systemInfo.AuthName) || string.IsNullOrEmpty(_systemInfo.Modules))
-            {
-                if (!string.IsNullOrEmpty(_options.RealyLoginPath))
-                    httpContext.Response.Redirect(_options.RealyLoginPath);
-                else
-                    await httpContext.Response.WriteAsync("Unauthorized Access");
+                await httpContext.Response.WriteAsync("Unauthorized Access");
                 return;
             }
             else if (path == $"/{routePrefix}")
@@ -82,7 +78,6 @@ namespace Qc.MeadminSdk
                 await RespondWithModulesJs(httpContext.Response, m);
                 return;
             }
-
 
             await _staticFileMiddleware.Invoke(httpContext);
         }
@@ -114,6 +109,7 @@ namespace Qc.MeadminSdk
         /// 输出首页
         /// </summary>
         /// <param name="response"></param>
+        /// <param name="assetsName"></param>
         /// <returns></returns>
         private async Task RespondWithHtml(HttpResponse response, string assetsName)
         {
@@ -123,11 +119,10 @@ namespace Qc.MeadminSdk
             using (var stream = typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.{assetsName}"))
             {
                 var htmlBuilder = new StringBuilder(new StreamReader(stream).ReadToEnd());
-                htmlBuilder.Replace("{{TmpApiLogin}}", _options.LoginApiPath);
-                htmlBuilder.Replace("<tmp-title></tmp-title>", _options.SysTitle);
+                htmlBuilder.Replace("{{SysTitle}}", _options.GetPageConfig()[MeadminPageConst.SysTitle].ToString());
+                htmlBuilder.Replace("{{SysMainJsSrc}}", !string.IsNullOrEmpty(_options.CustomMainJsSrc) ? _options.CustomMainJsSrc : (_options.EnableModuleLazyload ? "./main_modules.js" : "./main.js"));
                 htmlBuilder.Replace("<tmp-head></tmp-head>", string.Join(Environment.NewLine, _options.HeaderTemplate));
                 htmlBuilder.Replace("<tmp-footer></tmp-footer>", string.Join(Environment.NewLine, _options.FooterTemplate));
-                htmlBuilder.Replace("{{CustomMainJsSrc}}", !string.IsNullOrEmpty(_options.CustomMainJsSrc) ? _options.CustomMainJsSrc : (_options.EnableModuleLazyload ? "./main_modules.js" : "./main.js"));
 
                 await response.WriteAsync(htmlBuilder.ToString(), Encoding.UTF8);
             }
@@ -181,24 +176,12 @@ namespace Qc.MeadminSdk
         {
             var systemRoutes = string.Join(",", GetRoutes());
             var systemComps = string.Join(",", GetComponents());
-            var systemInfo = new
-            {
-                _options.SysTitle,
-                _options.SysLogo,
-                LoginPath = _options.RealyLoginPath,
-                _options.CommonAmapKey,
-                _options.LogoutPath,
-                _options.IndexPath,
-                _options.ApiBasePrefix,
-                _options.SysTheme,
-                _options.SysNavTheme,
-                _systemInfo.AuthName,
-                _systemInfo.Menus,
-                _systemInfo.Modules
-            };
+            Dictionary<string, object> systemInfo = _options.GetPageConfig();
+            systemInfo.Add("AuthName", _systemInfo.AuthName);
+            systemInfo.Add("Menus", _systemInfo.Menus);
+            systemInfo.Add("Modules", _systemInfo.Modules);
             return new Dictionary<string, string>()
             {
-                { "_Data_SystemTitle", _options.SysTitle },
                 { "_Data_SystemInfo",JsonHelper.Serialize(systemInfo) },
                 { "_Data_SystemRoutes",JsonHelper.Serialize(systemRoutes) },
                 { "_Data_SystemComps",JsonHelper.Serialize(systemComps) },

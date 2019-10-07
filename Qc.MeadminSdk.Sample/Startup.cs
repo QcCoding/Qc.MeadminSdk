@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Qc.MeadminSdk;
+using Qc.MeadminSdk.Models;
 using Qc.SampleauthSdk;
 
 namespace Qc.MeadminSdk.Sample
@@ -32,33 +33,50 @@ namespace Qc.MeadminSdk.Sample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMeadminSdk(Configuration.GetSection("MeadminOptions").Bind);
-
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
+            var authList = new List<SampleauthUserItem>();
+            authList.Add(new SampleauthUserItem() { Username = "test", Userpwd = "test", Userkey = "user_user_list,user_user_create,user_user_edit" });
             app.UseSampleauthSdk(opt =>
             {
-                opt.PageSetting = new Dictionary<string, string>()
+                Configuration.GetSection("MeadminOptions").Bind(opt);
+                opt.SampleauthList = authList;
+                opt.SignInBeforeHook = (httpContext, username, userpwd) =>
                 {
-                    { SampleauthPageConst.LoginTextPageTitle,Configuration.GetSection("MeadminOptions").GetValue<string>("SysTitle")}
+                    var existUser = authList.FirstOrDefault(s => s.Username == username && s.Userpwd == userpwd);
+                    if (existUser != null)
+                    {
+                        httpContext.Response.Cookies.Append("LOGIN_USERNAME", existUser.Username, new CookieOptions()
+                        {
+                            Expires = DateTime.Now.AddMonths(1)
+                        });
+                    }
+                    return false;
                 };
-                opt.RoutePrefix = Configuration.GetSection("MeadminOptions").GetValue<string>("RoutePrefix");
-                opt.SampleauthList = new List<SampleauthUserItem>();
-                opt.SampleauthList.Add(new SampleauthUserItem() { Username = "test", Userpwd = "test" });
             });
-            app.UseMeadminSdk(httpContext =>
+
+            app.UseMeadminSdk(opt =>
             {
-                return new SystemInfoModel()
+                Configuration.GetSection("MeadminOptions").Bind(opt);
+
+                opt.AuthHandler = httpContext =>
                 {
-                    AuthName = "test",
-                    Modules = "*",
-                    Menus = ModulesHelper.GetBackendAllMenus()
+                    var loginUsername = httpContext.Request.Cookies["LOGIN_USERNAME"];
+
+                    return new MeadminSystemInfoModel()
+                    {
+                        AuthName = loginUsername,
+                        Menus = ModulesHelper.GetBackendAllMenus(),
+                        Modules = authList.FirstOrDefault(s => s.Username == loginUsername).Userkey
+                    };
                 };
+
             });
+
             app.UseStaticFiles();
             app.UseMvc();
         }

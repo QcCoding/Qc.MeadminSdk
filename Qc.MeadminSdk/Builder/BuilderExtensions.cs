@@ -6,15 +6,14 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
+using Qc.MeadminSdk.Models;
 
 namespace Qc.MeadminSdk
 {
     public static class BuilderExtensions
     {
-        internal static Func<HttpContext, SystemInfoModel> AuthHandler = s => null;
-        public static IApplicationBuilder UseMeadminSdk(this IApplicationBuilder app, Func<HttpContext, SystemInfoModel> authHandler = null, Action<MeadminOptions> setupAction = null)
+        public static IApplicationBuilder UseMeadminSdk(this IApplicationBuilder app, Action<MeadminOptions> setupAction = null)
         {
-            AuthHandler = authHandler;
             if (setupAction == null)
             {
                 app.UseMiddleware<MeadminMiddleware>();

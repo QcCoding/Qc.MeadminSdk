@@ -44,7 +44,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpGet]
         [Route("user/list")]
-        [Permission("user_user_list", "用户列表", true)]
+        [MeadminPermission("user_user_list", "用户列表", true)]
         public IActionResult UserList(string keyword, int pageIndex = 0, int pageSize = 20)
         {
             var items = USER_LIST_DATA;
@@ -69,7 +69,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpGet]
         [Route("user/item")]
-        [RelyPermission("user_user_create", "user_user_edit")]
+        [MeadminRelyPermission("user_user_create", "user_user_edit")]
         public IActionResult UserItem(int id)
         {
             var existItem = USER_LIST_DATA.FirstOrDefault(s => s.Id == id);
@@ -81,7 +81,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpPost]
         [Route("user/create")]
-        [Permission("user_user_create", "用户创建")]
+        [MeadminPermission("user_user_create", "用户创建")]
         //[ModelValid]
         public OperateResult UserCreate([FromBody]UserInfoModel input)
         {
@@ -99,7 +99,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpPost]
         [Route("user/edit")]
-        [Permission("user_user_edit", "用户编辑")]
+        [MeadminPermission("user_user_edit", "用户编辑")]
         //[ModelValid]
         public OperateResult UserEdit([FromBody]UserInfoModel input)
         {
@@ -124,7 +124,7 @@ namespace Qc.MeadminSdk.Sample.Controller
         /// <returns></returns>
         [HttpPost]
         [Route("user/delete")]
-        [Permission("user_user_delete", "用户删除")]
+        [MeadminPermission("user_user_delete", "用户删除")]
         public IActionResult DeleteUser([FromBody]IdsRequest<long> request)
         {
             USER_LIST_DATA.RemoveAll(s => request.Ids.Contains(s.Id));
