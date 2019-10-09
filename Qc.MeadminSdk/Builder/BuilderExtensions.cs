@@ -7,8 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Qc.MeadminSdk.Models;
-using React.AspNet;
-using React;
 
 namespace Qc.MeadminSdk
 {
@@ -30,12 +28,6 @@ namespace Qc.MeadminSdk
                 });
 
             }
-            app.UseReact(config =>
-            {
-                config
-                  .SetLoadBabel(true)
-                  .SetBabelVersion(BabelVersions.Babel6);
-            });
             return app;
         }
     }

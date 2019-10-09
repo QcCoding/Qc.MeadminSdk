@@ -2,6 +2,7 @@
 using Qc.MeadminSdk.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Qc.MeadminSdk
@@ -112,9 +113,17 @@ namespace Qc.MeadminSdk
         /// </summary>
         public bool EnableModuleLazyload { get; set; }
         /// <summary>
-        /// 启用 Babel
+        /// 启用JS压缩
         /// </summary>
-        public bool EnableBabel { get; set; }
+        public bool EnableUglifyJs { get; set; }
+        /// <summary>
+        /// 启用html压缩
+        /// </summary>
+        public bool EnableUglifyHtml { get; set; }
+        /// <summary>
+        /// history 模式
+        /// </summary>
+        public bool IsHistoryMode { get; set; }
         /// <summary>
         /// 自定义main.js的src
         /// </summary>
@@ -133,7 +142,6 @@ namespace Qc.MeadminSdk
             {
                 {MeadminPageConst.SysTitle,SysTitle },
                 {MeadminPageConst.ApiBasePrefix,ApiBasePrefix },
-                {MeadminPageConst.SysMainJsSrc,SysMainJsSrc },
                 {MeadminPageConst.LoginPath,LoginPath},
                 {MeadminPageConst.LogoutPath,LogoutPath},
                 {MeadminPageConst.IndexPath,IndexPath},
@@ -159,5 +167,9 @@ namespace Qc.MeadminSdk
         /// 系统登录信息
         /// </summary>
         public Func<HttpContext, MeadminSystemInfoModel> AuthHandler { get; set; }
+        /// <summary>
+        /// 自定义首页
+        /// </summary>
+        public string CustomIndexHtml { get; set; }
     }
 }

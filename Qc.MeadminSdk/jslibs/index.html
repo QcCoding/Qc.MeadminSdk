@@ -5,33 +5,47 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-    <link rel="stylesheet" href="./elementui/element-ui.css" />
-    <link rel="stylesheet" href="./nprogress/nprogress.css" />
+    <link rel="stylesheet" href="{{SysRoutePrefix}}/elementui/element-ui.css" />
+    <link rel="stylesheet" href="{{SysRoutePrefix}}/nprogress/nprogress.css" />
     <tmp-head></tmp-head>
 </head>
 <body>
     <div id="app">
         <router-view></router-view>
     </div>
-    <script type="text/javascript" src="./nprogress/nprogress.js"></script>
-    <script>NProgress.set(0.0);</script>
-    <script type="text/javascript" src="./vue/vue.js"></script>
+    <script type="text/javascript" src="{{SysRoutePrefix}}/nprogress/nprogress.js"></script>
+    <script>NProgress.set(0.1);</script>
+    <script type="text/javascript" src="{{SysRoutePrefix}}/vue/vue.js"></script>
     <script>NProgress.set(0.4);</script>
-    <script type="text/javascript" src="./vuerouter/vue-router.js"></script>
-    <script src="./vuex/vuex.js"></script>
+    <script type="text/javascript" src="{{SysRoutePrefix}}/vuerouter/vue-router.js"></script>
+    <script type="text/javascript" src="{{SysRoutePrefix}}/vuex/vuex.js"></script>
     <script>NProgress.set(0.5);</script>
-    <script type="text/javascript" src="./elementui/element-ui.js"></script>
+    <script type="text/javascript" src="{{SysRoutePrefix}}/elementui/element-ui.js"></script>
     <script>NProgress.set(0.6);</script>
-    <script type="text/javascript" src="./axios/axios.js"></script>
+    <script type="text/javascript" src="{{SysRoutePrefix}}/axios/axios.js"></script>
     <script>NProgress.set(0.7);</script>
-    <script src="./meadminsdk/me-admin-sdk.js?v=20191008">
+    <script src="{{SysRoutePrefix}}/meadminsdk/me-admin-sdk.js?v=20191008">
     </script>
     <script>NProgress.set(0.8);</script>
     <tmp-footer></tmp-footer>
-    <script  src="./build.js">
-    </script>
     <script>NProgress.set(0.9);</script>
-    <script  src="{{SysMainJsSrc}}">
+    <script>
+        function createScript(src,isUseBabel) {
+            var scriptBlock = document.createElement('script');
+            scriptBlock.src = src;
+            scriptBlock.type = isUseBabel ? 'text/babel' : "text/javascript"
+            scriptBlock.async = false;
+            document.body.appendChild(scriptBlock);
+        }
+        //动态创建build.js/main.js,根据需要加载 babel polyfill
+        var isUseBabel = window.__SysUseBabel;
+        console.log('isUseBabel:' + isUseBabel);
+        if (isUseBabel) {
+            createScript('{{SysRoutePrefix}}/babel/babel.js',false);
+            createScript('{{SysRoutePrefix}}/polyfill/polyfill.js',false);
+        }
+        createScript('{{SysRoutePrefix}}/build.js',isUseBabel,false)
+        createScript('{{SysMainJsSrc}}',isUseBabel,false)
     </script>
 </body>
 </html>

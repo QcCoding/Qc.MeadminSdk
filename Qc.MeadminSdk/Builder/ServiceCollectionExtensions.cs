@@ -3,9 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using JavaScriptEngineSwitcher.ChakraCore;
-using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
-using React.AspNet;
 
 namespace Qc.MeadminSdk
 {
@@ -24,11 +21,6 @@ namespace Qc.MeadminSdk
                 services.Configure(optionsAction);
             }
 
-            services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
-                .AddChakraCore();
-
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddReact();
             return services;
         }
 

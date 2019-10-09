@@ -6,7 +6,8 @@
                     <el-form-item label="关键字">
                         <el-input type="text" v-model="search.keyword" clearable></el-input>
                     </el-form-item>
-                    <el-button icon="el-icon-search" @click="e=>this.$refs.mytable.search()"></el-button>
+                    <el-button icon="el-icon-search" @click="loadSearch"></el-button>
+                    <!--<el-button icon="el-icon-search" @click="s=>this.$refs.mytable.search(s)"></el-button>-->
                 </el-form>
             </el-col>
             <el-col :span="6" class="text-right">
@@ -19,7 +20,7 @@
                        ref="mytable"
                        show-checkbox
                        :hide-pager="false"
-                       @handle-checkbox="e=>checkList=e">
+                       @handle-checkbox="selectCheck">
             <el-table-column prop="username" label="用户名">
             </el-table-column>
             <el-table-column prop="nickName" label="昵称">
@@ -60,6 +61,13 @@
             }
         },
         methods: {
+            selectCheck(list) {
+                this.checkList = list;
+                console.log(this.checkList)
+            },
+            loadSearch(s) {
+                this.$refs.mytable.search(s)
+            },
             delUser(ids) {
                 this.$ui.pages.confirm('确认删除？').then(res => {
                     this.$refs.mytable.showLoading()

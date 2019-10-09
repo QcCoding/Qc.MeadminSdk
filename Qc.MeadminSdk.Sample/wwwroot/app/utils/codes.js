@@ -38,4 +38,4 @@ MeAdminSdk.registerCodes(null, function ($ui) {
             });
         }
     }
-})
+});

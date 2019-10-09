@@ -30,7 +30,7 @@ namespace Qc.MeadminSdk
         /// <summary>
         /// 脚本内容匹配正则
         /// </summary>
-        public static string ScriptRegexPattern = ScriptStart + @"[\S\s]*?export[\S\s]+?default[\S\s]*?{([\S\s]*)}[\S\s]*?" + ScriptEnd;
+        public static string ScriptRegexPattern = ScriptStart + @"[\S\s]*?{([\S\s]*)}[\S\s]*?" + ScriptEnd;
         /// <summary>
         /// Js结束标记
         /// </summary>
@@ -71,22 +71,10 @@ namespace Qc.MeadminSdk
         /// <param name="input"></param>
         /// <param name="isRegex"></param>
         /// <returns></returns>
-        public static string GetVueScript(string input, bool isRegex = true)
+        public static string GetVueScript(string input)
         {
-            if (isRegex)
-            {
-                var regex = new Regex(VueTemplateRender.ScriptRegexPattern);
-                return regex.Match(input)?.Groups[1].Value;
-            }
-            else
-            {
-                //export default 处理
-                var scriptFirstIndex = input.LastIndexOf(VueTemplateRender.ScriptStart);
-                var scriptLastIndex = input.LastIndexOf(VueTemplateRender.ScriptEnd);
-                var script = input.Substring(scriptFirstIndex + VueTemplateRender.ScriptStart.Length, scriptLastIndex - scriptFirstIndex - VueTemplateRender.ScriptStart.Length);
-
-                return script;
-            }
+            var regex = new Regex(VueTemplateRender.ScriptRegexPattern);
+            return regex.Match(input)?.Groups[1].Value.Trim();
         }
 
         /// <summary>
@@ -108,21 +96,11 @@ namespace Qc.MeadminSdk
                     RemoveOptionalTags = false,
                     AttributesCaseSensitive = true
                     //RemoveComments = true,
-                    //RemoveJavaScript = false,
-                    //MinifyJs = false,
-                    //MinifyCss = false,
-                    //MinifyCssAttributes = false,
                 });
                 if (templateUglifyResult.HasErrors)
                 {
                     throw new Exception(string.Join(",", templateUglifyResult.Errors));
                 }
-                var scriptUglifyResult = Uglify.Js(VueTemplateRender.GetVueScript(vueHtml, false), new NUglify.JavaScript.CodeSettings() { });
-                if (scriptUglifyResult.HasErrors && scriptUglifyResult.Errors.Where(s => !s.Message.StartsWith("Implicit property name must be identifier")).Count() > 0)
-                {
-                    throw new Exception(string.Join(",", scriptUglifyResult.Errors));
-                }
-                var script = scriptUglifyResult.Code.Replace("export default{", "");
                 var template = templateUglifyResult.Code;
                 var routerPath = path.Replace(viewPath, "")
                     .Replace("//", "/")
@@ -131,23 +109,20 @@ namespace Qc.MeadminSdk
                     .Replace(VueTemplateRender.RouterChildrenParamsSeparator, "/:")
                     .Replace(VueTemplateRender.RouterParamsSeparator, ":");
                 var rb = new StringBuilder();
-
                 if (isRouter)
                 {
-                    rb.Append("{");
-                    rb.Append("path: '" + routerPath + "',");
-                    rb.Append("component: ");
+                    rb.AppendLine("{");
+                    rb.AppendLine("path: '" + routerPath + "',");
+                    rb.AppendLine("component: ");
                 }
-                rb.Append("{ ");
-                var str = template.Trim().Replace("'", "#&#");
+                // 模板字符串，序列化一下自动转义
+                var templateStr = JsonHelper.Serialize(template);
+                var scriptStr = VueTemplateRender.GetVueScript(vueHtml);// path:'',created(){}
+                rb.AppendLine("{template:" + templateStr + "," + scriptStr + "}");
 
-                rb.Append("template:'" + str + "'.replace(/#&#/g,'\\''), " + script);
-
-
-                //rb.Append("}");
                 if (isRouter)
                 {
-                    rb.Append("}");
+                    rb.AppendLine("}");
                 }
                 return rb.ToString();
             }

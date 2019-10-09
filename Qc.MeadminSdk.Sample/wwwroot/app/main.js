@@ -1,13 +1,13 @@
 ﻿(function (sysInfo, sysRoutes) {
     if (window['__currentApp'])
         return;
-    //系统配置
+    //! 自定义初始化
     var sysAppConfig = {
         el: '#app',
         currentAppKey: '__currentApp',
         sysInfo: sysInfo,
         router: {
-            mode: window.sysRouterIsHistoryMode ? 'history' : 'hash',
+            mode: 'hash',
             base: window.sysRouterBasePath || '/',
             routes: [{
                 path: '/',

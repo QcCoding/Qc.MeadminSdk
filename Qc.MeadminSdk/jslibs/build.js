@@ -1,7 +1,16 @@
-﻿localStorage.IS_HASH_MODE = true
-window.sysInfo = _Data_SystemInfo
-axios.defaults.baseURL = window.sysInfo.apiBasePrefix || '/api';
-window.sysRoutes = eval('[' + _Data_SystemRoutes + ']').map(function (e) {
+﻿
+//基础路由
+window.sysRouterBasePath = __Data_RoutePrefix;
+//是否history模式
+window.sysRouterIsHistoryMode = __Data_IsHistoryMode;
+//系统信息
+window.sysInfo = __Data_SystemInfo;
+//接口前缀
+if (window.sysInfo.apiBasePrefix) {
+    axios.defaults.baseURL = window.sysInfo.apiBasePrefix;
+}
+//系统路由
+window.sysRoutes = [__Data_SystemRoutes].map(function (e) {
     if (!e.component)
         return e;
     if (typeof (e.component.path) !== 'undefined') {
@@ -15,10 +24,9 @@ window.sysRoutes = eval('[' + _Data_SystemRoutes + ']').map(function (e) {
     }
     return e;
 });
+//组件注册
 var compObj = {};
-eval('[' + _Data_SystemComps + ']').map(function (e) {
+[__Data_SystemComps].map(function (e) {
     compObj = e;
     Vue.component(compObj.name, compObj);
 })
-
-let _abcdef = () => { }

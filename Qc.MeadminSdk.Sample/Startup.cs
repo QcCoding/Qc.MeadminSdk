@@ -44,8 +44,15 @@ namespace Qc.MeadminSdk.Sample
             authList.Add(new SampleauthUserItem() { Username = "test", Userpwd = "test", Userkey = "home,user_user_list,user_user_create,user_user_edit" });
             app.UseSampleauthSdk(opt =>
             {
-                Configuration.GetSection("MeadminOptions").Bind(opt);
+                //Configuration.GetSection("SampleauthSetting").Bind(opt);
+                var meadminOpt = Configuration.GetSection("MeadminOptions").Get<MeadminOptions>();
+                opt.RoutePrefix = meadminOpt.RoutePrefix;
+                //opt.LoginPath = meadminOpt.LoginPath;
+                //opt.LogoutPath = meadminOpt.LogoutPath;
                 opt.SampleauthList = authList;
+                opt.PageSetting = new Dictionary<string, string>();
+                opt.PageSetting.Add(SampleauthPageConst.LoginHeadStyle, ".login_input{height:40px;}");
+                opt.PageSetting.Add(SampleauthPageConst.LoginTextPageTitle, meadminOpt.SysTitle);
                 opt.SignInBeforeHook = (httpContext, username, userpwd) =>
                 {
                     var existUser = authList.FirstOrDefault(s => s.Username == username && s.Userpwd == userpwd);
@@ -59,11 +66,9 @@ namespace Qc.MeadminSdk.Sample
                     return false;
                 };
             });
-
             app.UseMeadminSdk(opt =>
             {
                 Configuration.GetSection("MeadminOptions").Bind(opt);
-
                 opt.AuthHandler = httpContext =>
                 {
                     var loginUsername = httpContext.Request.Cookies["LOGIN_USERNAME"];
