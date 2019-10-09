@@ -20,3 +20,5 @@ eval('[' + _Data_SystemComps + ']').map(function (e) {
     compObj = e;
     Vue.component(compObj.name, compObj);
 })
+
+let _abcdef = () => { }

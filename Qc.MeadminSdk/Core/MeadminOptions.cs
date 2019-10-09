@@ -112,6 +112,10 @@ namespace Qc.MeadminSdk
         /// </summary>
         public bool EnableModuleLazyload { get; set; }
         /// <summary>
+        /// 启用 Babel
+        /// </summary>
+        public bool EnableBabel { get; set; }
+        /// <summary>
         /// 自定义main.js的src
         /// </summary>
         public string CustomMainJsSrc { get; set; }

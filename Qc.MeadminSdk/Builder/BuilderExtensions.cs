@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Qc.MeadminSdk.Models;
+using React.AspNet;
+using React;
 
 namespace Qc.MeadminSdk
 {
@@ -20,13 +22,20 @@ namespace Qc.MeadminSdk
             }
             else
             {
-                MeadminOptions authOptions = new MeadminOptions();
-                setupAction(authOptions);
+                MeadminOptions meadinOptions = new MeadminOptions();
+                setupAction(meadinOptions);
                 UseMiddlewareExtensions.UseMiddleware<MeadminMiddleware>(app, new object[1]
                 {
-                    Options.Create(authOptions)
+                    Options.Create(meadinOptions)
                 });
+
             }
+            app.UseReact(config =>
+            {
+                config
+                  .SetLoadBabel(true)
+                  .SetBabelVersion(BabelVersions.Babel6);
+            });
             return app;
         }
     }

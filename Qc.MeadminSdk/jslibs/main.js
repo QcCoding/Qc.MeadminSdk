@@ -45,3 +45,6 @@ window.sysAppConfig = window.sysAppConfig || {
     }
 }
 var vueApp = MeAdminSdk.register(window.sysAppConfig)
+
+
+let _abc = () => { }

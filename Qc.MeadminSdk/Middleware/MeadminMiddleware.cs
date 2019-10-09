@@ -14,6 +14,9 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using System.Reflection;
 using Qc.MeadminSdk.Models;
+using React;
+using JavaScriptEngineSwitcher.Core;
+using NUglify;
 
 namespace Qc.MeadminSdk
 {
@@ -72,6 +75,26 @@ namespace Qc.MeadminSdk
                 await RespondWithBuildJs(httpContext.Response);
                 return;
             }
+            else if (path == $"{routePrefix}/main.js" || path == $"/{routePrefix}/main.js")
+            {
+                using (var stream = typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.main.js"))
+                {
+                    var jsContent = new StreamReader(stream).ReadToEnd();
+                    var result = _options.EnableBabel ? ReactEnvironment.Current.Babel.Transform(jsContent) : jsContent;
+                    await httpContext.Response.WriteAsync(result, Encoding.UTF8);
+                }
+                return;
+            }
+            else if (path == $"{routePrefix}/main_modules.js" || path == $"/{routePrefix}/main_modules.js")
+            {
+                using (var stream = typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.main_modules.js"))
+                {
+                    var jsContent = new StreamReader(stream).ReadToEnd();
+                    var result = _options.EnableBabel ? ReactEnvironment.Current.Babel.Transform(jsContent) : jsContent;
+                    await httpContext.Response.WriteAsync(result, Encoding.UTF8);
+                }
+                return;
+            }
             else if (_options.EnableModuleLazyload && path.StartsWith($"{routePrefix}/modulejs/") || path.StartsWith($"/{routePrefix}/modulejs/"))
             {
                 var m = path.Replace($"/{routePrefix}/modulejs/", "").Replace($"{routePrefix}/modulejs/", "").Replace(".js", "");
@@ -90,7 +113,7 @@ namespace Qc.MeadminSdk
             var staticFileOptions = new StaticFileOptions
             {
                 RequestPath = string.IsNullOrEmpty(_options.RoutePrefix) ? string.Empty : $"/{_options.RoutePrefix}",
-                FileProvider = new EmbeddedFileProvider(typeof(MeadminOptions).GetTypeInfo().Assembly, EmbeddedFileNamespace),
+                FileProvider = new EmbeddedFileProvider(typeof(MeadminOptions).GetTypeInfo().Assembly, EmbeddedFileNamespace)
             };
 
             return new StaticFileMiddleware(next, hostingEnv, Options.Create(staticFileOptions), loggerFactory);
@@ -123,8 +146,8 @@ namespace Qc.MeadminSdk
                 htmlBuilder.Replace("{{SysMainJsSrc}}", !string.IsNullOrEmpty(_options.CustomMainJsSrc) ? _options.CustomMainJsSrc : (_options.EnableModuleLazyload ? "./main_modules.js" : "./main.js"));
                 htmlBuilder.Replace("<tmp-head></tmp-head>", string.Join(Environment.NewLine, _options.HeaderTemplate));
                 htmlBuilder.Replace("<tmp-footer></tmp-footer>", string.Join(Environment.NewLine, _options.FooterTemplate));
-
-                await response.WriteAsync(htmlBuilder.ToString(), Encoding.UTF8);
+                var html = Uglify.Html(htmlBuilder.ToString()).Code;
+                await response.WriteAsync(html, Encoding.UTF8);
             }
         }
         private async Task RespondWithModulesJs(HttpResponse response, string modules)
@@ -147,7 +170,8 @@ namespace Qc.MeadminSdk
             var contentBuilder = new StringBuilder();
             contentBuilder.AppendLine(componentContent);
             contentBuilder.AppendLine(routerContent);
-            await response.WriteAsync(contentBuilder.ToString(), Encoding.UTF8);
+            var jsContent = _options.EnableBabel ? ReactEnvironment.Current.Babel.Transform(contentBuilder.ToString()) : contentBuilder.ToString();
+            await response.WriteAsync(jsContent, Encoding.UTF8);
         }
         /// <summary>
         /// 输出buildjs,包含组件及扩展的js
@@ -168,8 +192,10 @@ namespace Qc.MeadminSdk
                     jsBuilder.Replace(entry.Key, entry.Value);
                 }
                 jsBuilder.AppendLine(GetAppendJs());
-
-                await response.WriteAsync(jsBuilder.ToString(), Encoding.UTF8);
+                // Transpiles a piece of code
+                var result = _options.EnableBabel ? ReactEnvironment.Current.Babel.Transform(jsBuilder.ToString()) : jsBuilder.ToString();
+                var buildJs=Uglify.Js(result).Code;
+                await response.WriteAsync(buildJs, Encoding.UTF8);
             }
         }
         private IDictionary<string, string> GetBuildArguments()
@@ -234,40 +260,42 @@ namespace Qc.MeadminSdk
         /// </summary>
         private string AnalysisVue(string viewPath, string path, bool isRouter = true)
         {
-            using (StreamReader sr = new StreamReader(path, System.Text.Encoding.UTF8))
-            {
-                var vueHtml = sr.ReadToEnd();
-                string template = VueTemplateRender.GetVueTemplate(vueHtml).Replace("\\", "\\\\");
-                string script = VueTemplateRender.GetVueScript(vueHtml);
-                var routerPath = path.Replace(viewPath, "")
-                    .Replace("//", "/")
-                    .Replace("\\", "/")
-                    .Replace(".vue", "")
-                    .Replace(VueTemplateRender.RouterChildrenParamsSeparator, "/:")
-                    .Replace(VueTemplateRender.RouterParamsSeparator, ":");
-                var rb = new StringBuilder();
-                if (isRouter)
-                {
+            return VueTemplateRender.AnalysisVue(viewPath, path, isRouter);
+            //using (StreamReader sr = new StreamReader(path, System.Text.Encoding.UTF8))
+            //{
+            //    var vueHtml = sr.ReadToEnd();
+            //    string template = VueTemplateRender.GetVueTemplate(vueHtml).Replace("\\", "\\\\");
+            //    string script = VueTemplateRender.GetVueScript(vueHtml);
+            //    var routerPath = path.Replace(viewPath, "")
+            //        .Replace("//", "/")
+            //        .Replace("\\", "/")
+            //        .Replace(".vue", "")
+            //        .Replace(VueTemplateRender.RouterChildrenParamsSeparator, "/:")
+            //        .Replace(VueTemplateRender.RouterParamsSeparator, ":");
+            //    var rb = new StringBuilder();
+               
+            //    if (isRouter)
+            //    {
 
-                    rb.Append("{");
-                    rb.Append("path: '" + routerPath + "',");
-                    rb.Append("component: ");
-                }
-                rb.Append("{ ");
-                string newLine = _options.IsUseCustomNewLine ? "\r\n" : Environment.NewLine;
+            //        rb.Append("{");
+            //        rb.Append("path: '" + routerPath + "',");
+            //        rb.Append("component: ");
+            //    }
+            //    rb.Append("{ ");
+            //    string newLine = _options.IsUseCustomNewLine ? "\r\n" : Environment.NewLine;
 
-                template = Regex.Replace(template, @"(" + newLine + ")+", newLine);
-                var str = template.Trim().Replace("'", "#&#").Replace(newLine, "\\");
-                rb.Append("template:'" + str + "'.replace(/#&#/g,'\\''), " + script);
+            //    template = Regex.Replace(template, @"(" + newLine + ")+", newLine);
+            //    var str = template.Trim().Replace("'", "#&#").Replace(newLine, "\\");
+            //    rb.Append("template:'" + str + "'.replace(/#&#/g,'\\''), " + script);
 
 
-                rb.Append("}");
-                if (isRouter)
-                {
-                    rb.Append("}");
-                }
-                return rb.ToString();
-            }
+            //    rb.Append("}");
+            //    if (isRouter)
+            //    {
+            //        rb.Append("}");
+            //    }
+            //    return rb.ToString();
+            //}
         }
     }
 }

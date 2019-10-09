@@ -13,7 +13,7 @@ MeAdminSdk.registerCodes(null, function ($ui) {
                 callback && callback()
                 return;
             }
-            $ui.pages.dynamicLoadJs("/libs/yimo-vue-editor.js", function () {
+            $ui.pages.dynamicLoadJs("/libs/yimo-vue-editor.js", () => {
                 window.Vue.use(YimoVueEditor, {
                     name: "v-form-editor", //Custom name
                     config: {}, //wagnEditor config

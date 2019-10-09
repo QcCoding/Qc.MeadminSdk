@@ -1,6 +1,9 @@
-﻿using System;
+﻿using NUglify;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -77,10 +80,76 @@ namespace Qc.MeadminSdk
             }
             else
             {
+                //export default 处理
                 var scriptFirstIndex = input.LastIndexOf(VueTemplateRender.ScriptStart);
                 var scriptLastIndex = input.LastIndexOf(VueTemplateRender.ScriptEnd);
                 var script = input.Substring(scriptFirstIndex + VueTemplateRender.ScriptStart.Length, scriptLastIndex - scriptFirstIndex - VueTemplateRender.ScriptStart.Length);
+
                 return script;
+            }
+        }
+
+        /// <summary>
+        /// 解析 Vue 路由
+        /// </summary>
+        public static string AnalysisVue(string viewPath, string path, bool isRouter = true)
+        {
+            using (StreamReader sr = new StreamReader(path, System.Text.Encoding.UTF8))
+            {
+                var vueHtml = sr.ReadToEnd();
+                // 无法解析@符号
+                var templateUglifyResult = Uglify.Html(VueTemplateRender.GetVueTemplate(vueHtml).Replace(" @", " v-on:"), new NUglify.Html.HtmlSettings()
+                {
+                    RemoveQuotedAttributes = false,
+                    AttributeQuoteChar = '\"',
+                    RemoveScriptStyleTypeAttribute = false,
+                    ShortBooleanAttribute = false,
+                    IsFragmentOnly = true,
+                    RemoveOptionalTags = false,
+                    AttributesCaseSensitive = true
+                    //RemoveComments = true,
+                    //RemoveJavaScript = false,
+                    //MinifyJs = false,
+                    //MinifyCss = false,
+                    //MinifyCssAttributes = false,
+                });
+                if (templateUglifyResult.HasErrors)
+                {
+                    throw new Exception(string.Join(",", templateUglifyResult.Errors));
+                }
+                var scriptUglifyResult = Uglify.Js(VueTemplateRender.GetVueScript(vueHtml, false), new NUglify.JavaScript.CodeSettings() { });
+                if (scriptUglifyResult.HasErrors && scriptUglifyResult.Errors.Where(s => !s.Message.StartsWith("Implicit property name must be identifier")).Count() > 0)
+                {
+                    throw new Exception(string.Join(",", scriptUglifyResult.Errors));
+                }
+                var script = scriptUglifyResult.Code.Replace("export default{", "");
+                var template = templateUglifyResult.Code;
+                var routerPath = path.Replace(viewPath, "")
+                    .Replace("//", "/")
+                    .Replace("\\", "/")
+                    .Replace(".vue", "")
+                    .Replace(VueTemplateRender.RouterChildrenParamsSeparator, "/:")
+                    .Replace(VueTemplateRender.RouterParamsSeparator, ":");
+                var rb = new StringBuilder();
+
+                if (isRouter)
+                {
+                    rb.Append("{");
+                    rb.Append("path: '" + routerPath + "',");
+                    rb.Append("component: ");
+                }
+                rb.Append("{ ");
+                var str = template.Trim().Replace("'", "#&#");
+
+                rb.Append("template:'" + str + "'.replace(/#&#/g,'\\''), " + script);
+
+
+                //rb.Append("}");
+                if (isRouter)
+                {
+                    rb.Append("}");
+                }
+                return rb.ToString();
             }
         }
     }

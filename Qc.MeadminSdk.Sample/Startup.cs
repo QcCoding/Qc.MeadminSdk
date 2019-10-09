@@ -33,6 +33,7 @@ namespace Qc.MeadminSdk.Sample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMeadminSdk();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -40,7 +41,7 @@ namespace Qc.MeadminSdk.Sample
         public void Configure(IApplicationBuilder app)
         {
             var authList = new List<SampleauthUserItem>();
-            authList.Add(new SampleauthUserItem() { Username = "test", Userpwd = "test", Userkey = "user_user_list,user_user_create,user_user_edit" });
+            authList.Add(new SampleauthUserItem() { Username = "test", Userpwd = "test", Userkey = "home,user_user_list,user_user_create,user_user_edit" });
             app.UseSampleauthSdk(opt =>
             {
                 Configuration.GetSection("MeadminOptions").Bind(opt);
