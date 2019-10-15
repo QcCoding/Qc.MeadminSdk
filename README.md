@@ -1,8 +1,6 @@
-# MeadminSdk
-
 ## Qc.MeadminSdk
 
-`Qc.MeadminSdk` 是一个基于 `.NET Standard 2.0` 构建，对我的后台框架平台的常用接口进行了封装。
+`Qc.MeadminSdk` 是一个使用 `asp.net core ` + `vue` 构建的开箱即用的的前后端半分离的后台管理系统解决方案，适用于快速开发后台管理系统
 
 
 ### 使用 MeadminSdk
@@ -17,33 +15,130 @@
 - 包管理器  
   `Install-Package Install-Package Qc.MeadminSdk`
 
-#### 二.添加配置
+#### 二.使用
 
-> 如需实现自定义存储 AccessToken，动态获取应用配置，可自行实现接口 `IMeadminSdkHook`  
-> 默认提供 `DefaultMeadminSdkHook`，存储 AccessToken 等信息到指定目录(默认./AppData)
+如需添加登录权限验证，可结合 [`Qc.SampleauthSdk`](https://github.com/QcCoding/Qc.SampleauthSdk) 使用
 
 ```cs
 using MeadminSdk;
-public void ConfigureServices(IServiceCollection services)
+public void Configure(IApplicationBuilder app)
 {
-  //...
-  services.AddMeadminSdk<MeadminSdk.DefaultMeadminSdkHook>(opt =>
-  {
-      opt.ApiKey = "Api Key";
-      opt.SecretKey = "Secret Key";
-  });
-  //...
+	app.UseMeadminSdk(opt =>
+	{
+		Configuration.GetSection("MeadminOptions").Bind(opt);
+		// 菜单权限
+        opt.AuthHandler = httpContext =>
+        {
+            var loginUsername = "admin";// httpContext.Request.Cookies["LOGIN_USERNAME"];
+
+            return new MeadminSystemInfoModel()
+            {
+                AuthName = loginUsername,
+				//根据需要添加
+                Menus = ModulesHelper.GetBackendAllMenus(),//获取根据特效标记生成的菜单，
+                Modules = "*";//* 表示所有权限，//authList.FirstOrDefault(s => s.Username == loginUsername).Userkey
+            };
+        };
+	});
+}
+```
+**根据特性标记生成菜单与权限**
+
+- MeadminModule(一级菜单生成)
+
+```cs
+[MeadminModule(Order = 200, ModuleName = "用户管理")]
+public class UserController : ControllerBase
+{
 }
 ```
 
-#### 三.代码中使用
+- MeadminPermission(二级菜单与模块标识,标识对应前台vue中定义的 name 值)
 
-在需要地方注入`MeadminService`后即可使用
+```cs
+[MeadminPermission("user_user_list", "用户列表", true)]
+public IActionResult UserList(string keyword)
+{
+	return Ok();
+}
+```
+- MeadminRelyPermission：依赖于某些权限
 
-### MeadminConfig 配置项
+```cs
+[MeadminRelyPermission("user_user_create", "user_user_edit")]
+public IActionResult UserItem(int id)
+{
+	return Ok();
+}
+```
 
-Meadmin文档地址: 
+### MeadminOptions 配置项
+
+appsetting.json 中 MeadminOptions 配置参考
+
+```
+{
+  "MeadminOptions": {
+    "EnableBabel": true,
+    //路由前缀
+    "RoutePrefix": "admin",
+    //模块化懒加载
+    "EnableModuleLazyload": false,
+    // 压缩html
+    "EnableUglifyHtml": true,
+    // 压缩js
+    "EnableUglifyJs": true,
+    // 是否history模式
+    "IsHistoryMode": true,
+    //视图路径，读取所有的vue文件
+    "ViewPath": "./wwwroot/app/views",
+    //追加的js文件路径，注册api及通用常量
+    "AppendJsPaths": [
+      "./wwwroot/app/api/",
+      "./wwwroot/app/utils/",
+      "./wwwroot/app/main.js"
+    ],
+    //头部模板，用于加载自定义css
+    "HeaderTemplate": [
+      "<link rel='stylesheet' href='/css/style.css'/>"
+    ],
+    //底部模板，用于加载自定义js
+    "FooterTemplate": [
+      "<script>console.log('底部模板')</script>"
+    ],
+    //首页路由
+    "IndexPath": "/admin/welcome",
+    //指定登录页
+    "LoginPath": "/admin/login",
+    //退出页
+    "LogoutPath": "/admin/logout",
+    //导航皮肤
+    "SysNavTheme": {
+      "BackgroundColor": "#545c64",
+      "TextColor": "#fff",
+      "ActiveTextColor": "#ffd04b"
+    },
+    //接口前缀
+    "ApiBasePrefix": "/api",
+    //系统标题
+    "SysTitle": "Meadmin后台管理系统",
+    //主题色
+    "SysTheme": "#409EFF",
+    "PageSetting": {
+      "AmapKey": "2333333"
+    }
+  }
+}
+```
 
 ## 示例说明
 
 `Qc.MeadminSdk.Sample` 为示例项目，可进行测试
+
+- 登录页
+
+![image](https://user-images.githubusercontent.com/15975059/66807686-3105bc80-ef5c-11e9-8979-57f0c8388804.png)
+
+- 后台
+
+![image](https://user-images.githubusercontent.com/15975059/66807646-10d5fd80-ef5c-11e9-9ebc-bda215f82e11.png)
