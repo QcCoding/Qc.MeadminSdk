@@ -105,10 +105,6 @@ namespace Qc.MeadminSdk
         /// </summary>
         public List<string> FooterTemplate { get; set; }
         /// <summary>
-        /// 使用自定义换行符 linux的行为不一致 true：Environment.NewLine，false：\r\n
-        /// </summary>
-        public bool IsUseCustomNewLine { get; set; }
-        /// <summary>
         /// 启用模块懒加载
         /// </summary>
         public bool EnableModuleLazyload { get; set; }
@@ -166,10 +162,21 @@ namespace Qc.MeadminSdk
         /// <summary>
         /// 系统登录信息
         /// </summary>
-        public Func<HttpContext, MeadminSystemInfoModel> AuthHandler { get; set; }
+        public Func<HttpContext, MeadminSystemInfoModel> AuthHandler { get; set; } = httpContext =>
+        {
+            return new MeadminSystemInfoModel()
+            {
+                AuthName = "admin",
+                Modules = "*"
+            };
+        };
         /// <summary>
         /// 自定义首页
         /// </summary>
         public string CustomIndexHtml { get; set; }
+        /// <summary>
+        /// 引入Babel
+        /// </summary>
+        public bool IsUseBabel { get; set; }
     }
 }

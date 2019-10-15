@@ -144,12 +144,15 @@ namespace Qc.MeadminSdk
             else
                 htmlBuilder.Append(_options.CustomIndexHtml);
             string sysRoutePrefix = string.IsNullOrEmpty(_options.RoutePrefix) ? "." : "/" + _options.RoutePrefix;
-            htmlBuilder.Replace("window.__SysUseBabel", IsUseBabel(httpContext) ? "true" : "false");
+            var isUseBabel = IsUseBabel(httpContext);
+            htmlBuilder.Replace("{{ScriptType}}", isUseBabel ? "text/babel" : "text/javascript");
             htmlBuilder.Replace("{{SysRoutePrefix}}", sysRoutePrefix);
-            htmlBuilder.Replace("{{SysTitle}}", _options.GetPageConfig()[MeadminPageConst.SysTitle].ToString());
+            htmlBuilder.Replace("{{SysTitle}}", _options.GetPageConfig()[MeadminPageConst.SysTitle]?.ToString() ?? string.Empty);
             htmlBuilder.Replace("{{SysMainJsSrc}}", !string.IsNullOrEmpty(_options.CustomMainJsSrc) ? _options.CustomMainJsSrc : (sysRoutePrefix + (_options.EnableModuleLazyload ? "/main_modules.js" : "/main.js")));
-            htmlBuilder.Replace("<tmp-head></tmp-head>", string.Join(Environment.NewLine, _options.HeaderTemplate));
-            htmlBuilder.Replace("<tmp-footer></tmp-footer>", string.Join(Environment.NewLine, _options.FooterTemplate));
+            htmlBuilder.Replace("<tmp-head></tmp-head>", _options.HeaderTemplate == null ? string.Empty : string.Join(Environment.NewLine, _options.HeaderTemplate));
+            htmlBuilder.Replace("<tmp-footer></tmp-footer>", _options.FooterTemplate == null ? string.Empty : string.Join(Environment.NewLine, _options.FooterTemplate));
+            //babel
+            htmlBuilder.Replace("<tmp-babel></tmp-babel>", !isUseBabel ? string.Empty : $@"<script type=""text/javascript"" src =""{sysRoutePrefix}/babel/babel.js"" ></script><script type=""text/javascript"" src =""{sysRoutePrefix}/polyfill/polyfill.js""></script>");
             await httpContext.Response.WriteAsync(UglifyHtml(htmlBuilder.ToString()), Encoding.UTF8);
         }
         /// <summary>
@@ -159,8 +162,7 @@ namespace Qc.MeadminSdk
         /// <returns></returns>
         private bool IsUseBabel(HttpContext httpContext)
         {
-            string userAgent = httpContext.Request.Headers[Microsoft.Net.Http.Headers.HeaderNames.UserAgent];
-            return !Regex.IsMatch(userAgent, @"(Chrome|Firefox)");
+            return _options.IsUseBabel || !Regex.IsMatch(httpContext.Request.Headers[Microsoft.Net.Http.Headers.HeaderNames.UserAgent], @"(Chrome|Firefox|iPhone)");
         }
         private async Task RespondWithModulesJs(HttpResponse response, string modules)
         {

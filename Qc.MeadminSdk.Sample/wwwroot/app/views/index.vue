@@ -43,9 +43,9 @@
             </el-col>
             <el-col :span="24">
                 <el-row :gutter="20">
-                    <p class="copyright">
+                    <p class="copyright" style="text-align:center;">
                         本项目由
-                        <a href="https://www.greenorangetech.com/" target="_blank">四川青橙科技有限公司</a>
+                        <a href="https://github.com/qccoding/Qc.MeadminSdk" target="_blank">Qc.MeadminSdk</a>
                         提供技术支持
                     </p>
                 </el-row>

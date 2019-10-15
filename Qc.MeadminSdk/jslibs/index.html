@@ -29,23 +29,8 @@
     <script>NProgress.set(0.8);</script>
     <tmp-footer></tmp-footer>
     <script>NProgress.set(0.9);</script>
-    <script>
-        function createScript(src,isUseBabel) {
-            var scriptBlock = document.createElement('script');
-            scriptBlock.src = src;
-            scriptBlock.type = isUseBabel ? 'text/babel' : "text/javascript"
-            scriptBlock.async = false;
-            document.body.appendChild(scriptBlock);
-        }
-        //动态创建build.js/main.js,根据需要加载 babel polyfill
-        var isUseBabel = window.__SysUseBabel;
-        console.log('isUseBabel:' + isUseBabel);
-        if (isUseBabel) {
-            createScript('{{SysRoutePrefix}}/babel/babel.js',false);
-            createScript('{{SysRoutePrefix}}/polyfill/polyfill.js',false);
-        }
-        createScript('{{SysRoutePrefix}}/build.js',isUseBabel,false)
-        createScript('{{SysMainJsSrc}}',isUseBabel,false)
-    </script>
+    <script type="{{ScriptType}}" src="{{SysRoutePrefix}}/build.js"></script>
+    <script type="{{ScriptType}}" src="{{SysMainJsSrc}}"></script>
+    <tmp-babel></tmp-babel>
 </body>
 </html>

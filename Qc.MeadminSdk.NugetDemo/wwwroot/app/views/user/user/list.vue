@@ -49,7 +49,7 @@
         name: 'user_user_list',
         meta: {
             title: '用户列表',
-            cache: true
+            cache: false
         },
         data() {
             return {
