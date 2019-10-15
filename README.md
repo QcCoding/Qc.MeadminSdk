@@ -2,6 +2,7 @@
 
 `Qc.MeadminSdk` 是一个使用 `asp.net core ` + `vue` 构建的开箱即用的的前后端半分离的后台管理系统解决方案，适用于快速开发后台管理系统
 
+后台模板基于[me-admin-sdk](https://github.com/yimogit/me-admin-sdk)快速构建
 
 ### 使用 MeadminSdk
 
@@ -27,18 +28,18 @@ public void Configure(IApplicationBuilder app)
 	{
 		Configuration.GetSection("MeadminOptions").Bind(opt);
 		// 菜单权限
-        opt.AuthHandler = httpContext =>
-        {
-            var loginUsername = "admin";// httpContext.Request.Cookies["LOGIN_USERNAME"];
+		opt.AuthHandler = httpContext =>
+		{
+		    var loginUsername = "admin";// httpContext.Request.Cookies["LOGIN_USERNAME"];
 
-            return new MeadminSystemInfoModel()
-            {
-                AuthName = loginUsername,
-				//根据需要添加
-                Menus = ModulesHelper.GetBackendAllMenus(),//获取根据特效标记生成的菜单，
-                Modules = "*";//* 表示所有权限，//authList.FirstOrDefault(s => s.Username == loginUsername).Userkey
-            };
-        };
+		    return new MeadminSystemInfoModel()
+		    {
+			AuthName = loginUsername,
+					//根据需要添加
+			Menus = ModulesHelper.GetBackendAllMenus(),//获取根据特效标记生成的菜单，
+			Modules = "*";//* 表示所有权限，//authList.FirstOrDefault(s => s.Username == loginUsername).Userkey
+		    };
+		};
 	});
 }
 ```
