@@ -2,7 +2,7 @@
 
 `Qc.MeadminSdk` 是一个使用 `asp.net core ` + `vue` 构建的开箱即用的的前后端半分离的后台管理系统解决方案，适用于快速开发后台管理系统
 
-后台模板基于[me-admin-sdk](https://github.com/yimogit/me-admin-sdk)快速构建
+后台模板基于 [me-admin-sdk](https://github.com/yimogit/me-admin-sdk) 快速构建
 
 ### 使用 MeadminSdk
 
@@ -19,6 +19,8 @@
 #### 二.使用
 
 如需添加登录权限验证，可结合 [`Qc.SampleauthSdk`](https://github.com/QcCoding/Qc.SampleauthSdk) 使用
+
+具体如何在 asp.net core 项目中使用可参考 [Qc.MeadminSdk.NugetDemo](./Qc.MeadminSdk.NugetDemo)
 
 ```cs
 using MeadminSdk;
