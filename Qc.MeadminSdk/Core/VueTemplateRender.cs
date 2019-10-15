@@ -69,7 +69,6 @@ namespace Qc.MeadminSdk
         /// 获取Vue-脚本代码
         /// </summary>
         /// <param name="input"></param>
-        /// <param name="isRegex"></param>
         /// <returns></returns>
         public static string GetVueScript(string input)
         {
@@ -82,7 +81,7 @@ namespace Qc.MeadminSdk
         /// </summary>
         public static string AnalysisVue(string viewPath, string path, bool isRouter = true)
         {
-            using (StreamReader sr = new StreamReader(path, System.Text.Encoding.UTF8))
+            using (StreamReader sr = new StreamReader(path))
             {
                 var vueHtml = sr.ReadToEnd();
                 // 无法解析@符号
@@ -117,7 +116,8 @@ namespace Qc.MeadminSdk
                 }
                 // 模板字符串，序列化一下自动转义
                 var templateStr = JsonHelper.Serialize(template);
-                var scriptStr = VueTemplateRender.GetVueScript(vueHtml);// path:'',created(){}
+                //解析js
+                var scriptStr = GetVueScript(vueHtml);// path:'',created(){}
                 rb.AppendLine("{template:" + templateStr + "," + scriptStr + "}");
 
                 if (isRouter)

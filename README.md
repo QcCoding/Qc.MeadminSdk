@@ -95,11 +95,10 @@ appsetting.json 中 MeadminOptions 配置参考
     "IsHistoryMode": true,
     //视图路径，读取所有的vue文件
     "ViewPath": "./wwwroot/app/views",
-    //追加的js文件路径，注册api及通用常量
+    //追加的js文件路径，注册api及通用常量 文件格式请使用utf-8
     "AppendJsPaths": [
       "./wwwroot/app/api/",
       "./wwwroot/app/utils/",
-      "./wwwroot/app/main.js"
     ],
     //头部模板，用于加载自定义css
     "HeaderTemplate": [

@@ -14,7 +14,7 @@ namespace Qc.MeadminSdk
         {
             var setting = new JsonSerializerSettings()
             {
-                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(),
             };
             return o == null ? string.Empty : JsonConvert.SerializeObject(o, setting);
         }

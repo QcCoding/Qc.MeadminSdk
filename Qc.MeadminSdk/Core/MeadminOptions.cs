@@ -35,19 +35,27 @@ namespace Qc.MeadminSdk
         /// <summary>
         /// 登录路径
         /// </summary>
-        public static string LoginPath = nameof(LoginPath);
+        public const string LoginPath = nameof(LoginPath);
         /// <summary>
         /// 退出路径
         /// </summary>
-        public static string LogoutPath = nameof(LogoutPath);
+        public const string LogoutPath = nameof(LogoutPath);
         /// <summary>
         /// 首页路径
         /// </summary>
-        public static string IndexPath = nameof(IndexPath);
+        public const string IndexPath = nameof(IndexPath);
         /// <summary>
         /// 侧栏皮肤
         /// </summary>
-        public static string SysNavTheme = nameof(SysNavTheme);
+        public const string SysNavTheme = nameof(SysNavTheme);
+        /// <summary>
+        /// 默认内置主题
+        /// </summary>
+        public const string DefaultThemeColors = nameof(DefaultThemeColors);
+        /// <summary>
+        /// 自定义头部组件
+        /// </summary>
+        public const string CustomHeaderComp = nameof(CustomHeaderComp);
     }
     /// <summary>
     /// Meadmin配置
@@ -125,6 +133,14 @@ namespace Qc.MeadminSdk
         /// </summary>
         public string CustomMainJsSrc { get; set; }
         /// <summary>
+        /// 默认内置主题 无则不启用换肤
+        /// </summary>
+        public List<string> DefaultThemeColors { get; set; } = new List<string>();
+        /// <summary>
+        /// 自定义头部组件
+        /// </summary>
+        public string CustomHeaderComp { get; set; }
+        /// <summary>
         /// 页面文案配置
         /// </summary>
         public Dictionary<string, object> PageSetting { get; set; }
@@ -142,6 +158,8 @@ namespace Qc.MeadminSdk
                 {MeadminPageConst.LogoutPath,LogoutPath},
                 {MeadminPageConst.IndexPath,IndexPath},
                 {MeadminPageConst.SysNavTheme,SysNavTheme},
+                {MeadminPageConst.DefaultThemeColors,DefaultThemeColors },
+                {MeadminPageConst.CustomHeaderComp,CustomHeaderComp }
             };
             if (PageSetting?.Count > 0)
             {
@@ -166,7 +184,7 @@ namespace Qc.MeadminSdk
         {
             return new MeadminSystemInfoModel()
             {
-                AuthName = "admin",
+                AuthName = "",
                 Modules = "*"
             };
         };

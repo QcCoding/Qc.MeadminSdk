@@ -20,7 +20,6 @@ namespace Qc.MeadminSdk
             {
                 services.Configure(optionsAction);
             }
-
             return services;
         }
 

@@ -51,7 +51,7 @@ namespace Qc.MeadminSdk
                 return;
             }
             _systemInfo = _options.AuthHandler(httpContext);
-            if (_systemInfo == null || string.IsNullOrEmpty(_systemInfo.AuthName) || string.IsNullOrEmpty(_systemInfo.Modules))
+            if (_systemInfo == null || string.IsNullOrEmpty(_systemInfo.Modules))
             {
                 await httpContext.Response.WriteAsync("Unauthorized Access");
                 return;
@@ -70,23 +70,23 @@ namespace Qc.MeadminSdk
             }
             else if (path == $"{routePrefix}/main.js" || path == $"/{routePrefix}/main.js")
             {
-                using (var stream = typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.main.js"))
+                using (StreamReader stream = new StreamReader(typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.main.js")))
                 {
-                    var jsContent = new StreamReader(stream).ReadToEnd();
+                    var jsContent = stream.ReadToEnd();
                     httpContext.Response.StatusCode = 200;
                     httpContext.Response.ContentType = IsUseBabel(httpContext) ? "text/babel" : "text/javascript;charset=utf-8";
-                    await httpContext.Response.WriteAsync(UglifyJs(jsContent), Encoding.UTF8);
+                    await httpContext.Response.WriteAsync(UglifyJs(jsContent));
                 }
                 return;
             }
             else if (path == $"{routePrefix}/main_modules.js" || path == $"/{routePrefix}/main_modules.js")
             {
-                using (var stream = typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.main_modules.js"))
+                using (StreamReader stream = new StreamReader(typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.main_modules.js")))
                 {
-                    var jsContent = new StreamReader(stream).ReadToEnd();
+                    var jsContent = stream.ReadToEnd();
                     httpContext.Response.StatusCode = 200;
                     httpContext.Response.ContentType = IsUseBabel(httpContext) ? "text/babel" : "text/javascript;charset=utf-8";
-                    await httpContext.Response.WriteAsync(UglifyJs(jsContent), Encoding.UTF8);
+                    await httpContext.Response.WriteAsync(UglifyJs(jsContent));
                 }
                 return;
             }
@@ -140,9 +140,16 @@ namespace Qc.MeadminSdk
             httpContext.Response.ContentType = "text/html;charset=utf-8";
             var htmlBuilder = new StringBuilder();
             if (string.IsNullOrEmpty(_options.CustomIndexHtml))
-                htmlBuilder.Append(new StreamReader(typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.index.html")).ReadToEnd());
+            {
+                using (var stream = new StreamReader(typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.index.html")))
+                {
+                    htmlBuilder.Append(stream.ReadToEnd());
+                }
+            }
             else
+            {
                 htmlBuilder.Append(_options.CustomIndexHtml);
+            }
             string sysRoutePrefix = string.IsNullOrEmpty(_options.RoutePrefix) ? "." : "/" + _options.RoutePrefix;
             var isUseBabel = IsUseBabel(httpContext);
             htmlBuilder.Replace("{{ScriptType}}", isUseBabel ? "text/babel" : "text/javascript");
@@ -153,7 +160,7 @@ namespace Qc.MeadminSdk
             htmlBuilder.Replace("<tmp-footer></tmp-footer>", _options.FooterTemplate == null ? string.Empty : string.Join(Environment.NewLine, _options.FooterTemplate));
             //babel
             htmlBuilder.Replace("<tmp-babel></tmp-babel>", !isUseBabel ? string.Empty : $@"<script type=""text/javascript"" src =""{sysRoutePrefix}/babel/babel.js"" ></script><script type=""text/javascript"" src =""{sysRoutePrefix}/polyfill/polyfill.js""></script>");
-            await httpContext.Response.WriteAsync(UglifyHtml(htmlBuilder.ToString()), Encoding.UTF8);
+            await httpContext.Response.WriteAsync(UglifyHtml(htmlBuilder.ToString()));
         }
         /// <summary>
         /// 如果不是chrome/firefox则引用babel
@@ -185,7 +192,7 @@ namespace Qc.MeadminSdk
             contentBuilder.AppendLine(componentContent);
             contentBuilder.AppendLine(routerContent);
 
-            await response.WriteAsync(UglifyJs(contentBuilder.ToString()), Encoding.UTF8);
+            await response.WriteAsync(UglifyJs(contentBuilder.ToString()));
         }
         /// <summary>
         /// 压缩JS
@@ -206,47 +213,6 @@ namespace Qc.MeadminSdk
             return _options.EnableUglifyHtml ? Uglify.Html(html).Code : html;
         }
         /// <summary>
-        /// 输出buildjs,包含组件及扩展的js
-        /// </summary>
-        /// <param name="httpContext"></param>
-        /// <returns></returns>
-        private async Task RespondWithBuildJsV2(HttpContext httpContext)
-        {
-            var systemRoutes = string.Join(",", GetRoutes());
-            var systemComps = string.Join(",", GetComponents());
-            Dictionary<string, object> systemInfo = _options.GetPageConfig();
-            systemInfo.Add("AuthName", _systemInfo.AuthName);
-            systemInfo.Add("Menus", _systemInfo.Menus);
-            systemInfo.Add("Modules", _systemInfo.Modules);
-            var appendJs = GetAppendJs();
-
-            string buildJsText = @"
-window.sysRouterBasePath='/" + _options.RoutePrefix + @"';
-window.sysRouterIsHistoryMode =" + (_options.IsHistoryMode ? "true" : "false") + @"
-window.sysInfo = " + JsonHelper.Serialize(systemInfo) + @"
-axios.defaults.baseURL = window.sysInfo.apiBasePrefix || '/api';
-window.sysRoutes = [" + systemRoutes + @"].map(function (e) {
-    if (!e.component)
-        return e;
-    if (typeof (e.component.path) !== 'undefined') {
-        e.path = e.component.path
-    }
-    if (e.component.name) {
-        e.name = e.component.name
-    }
-    if (e.component.meta) {
-        e.meta = Object.assign({}, e.meta, e.component.meta)
-    }
-    return e;
-});
-var compObj = {};
-[" + systemComps + @"].map(function (e) {
-    compObj = e;
-    Vue.component(compObj.name, compObj);
-})
-" + appendJs;
-            await httpContext.Response.WriteAsync(UglifyJs(buildJsText), Encoding.UTF8);
-        }
         /// <summary>
         /// 输出buildjs,包含组件及扩展的js
         /// </summary>
@@ -255,16 +221,16 @@ var compObj = {};
         private async Task RespondWithBuildJs(HttpContext httpContext)
         {
 
-            using (var stream = typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.build.js"))
+            using (var stream = new StreamReader(typeof(MeadminOptions).GetTypeInfo().Assembly.GetManifestResourceStream($"{EmbeddedFileNamespace}.build.js")))
             {
                 // Inject arguments before writing to response
-                var jsBuilder = new StringBuilder(new StreamReader(stream).ReadToEnd());
+                var jsBuilder = new StringBuilder(stream.ReadToEnd());
                 foreach (var entry in GetBuildArguments())
                 {
                     jsBuilder.Replace(entry.Key, entry.Value);
                 }
                 jsBuilder.AppendLine(GetAppendJs());
-                await httpContext.Response.WriteAsync(UglifyJs(jsBuilder.ToString()), Encoding.UTF8);
+                await httpContext.Response.WriteAsync(UglifyJs(jsBuilder.ToString()));
             }
         }
         private IDictionary<string, string> GetBuildArguments()
