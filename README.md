@@ -39,7 +39,7 @@ public void Configure(IApplicationBuilder app)
 			AuthName = loginUsername,
 			//根据需要添加菜单
 			Menus = ModulesHelper.GetBackendAllMenus(),//获取根据特性标记生成的菜单
-			Modules = "*";//* 表示所有权限，//authList.FirstOrDefault(s => s.Username == loginUsername).Userkey
+			Modules = "*" //* 表示所有权限，//authList.FirstOrDefault(s => s.Username == loginUsername).Userkey
 		    };
 		};
 	});
