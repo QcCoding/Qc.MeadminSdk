@@ -35,8 +35,8 @@ public void Configure(IApplicationBuilder app)
 		    return new MeadminSystemInfoModel()
 		    {
 			AuthName = loginUsername,
-					//根据需要添加
-			Menus = ModulesHelper.GetBackendAllMenus(),//获取根据特效标记生成的菜单，
+			//根据需要添加菜单
+			Menus = ModulesHelper.GetBackendAllMenus(),//获取根据特性标记生成的菜单
 			Modules = "*";//* 表示所有权限，//authList.FirstOrDefault(s => s.Username == loginUsername).Userkey
 		    };
 		};
