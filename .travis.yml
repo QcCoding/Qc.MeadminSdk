@@ -7,6 +7,7 @@ before_install:
   - dotnet --version
   
 script:
+  - cd ./Qc.MeadminSdk.Sample
   - dotnet restore
   - dotnet publish -c release -o ./bin/Publish -r linux-x64
     
