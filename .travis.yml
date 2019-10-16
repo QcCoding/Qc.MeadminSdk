@@ -24,7 +24,7 @@ after_script:
 deploy:
   provider: heroku
   api_key: ${HEROKU_API_KEY}
-  app:me-admin-sdk-dotnet
+  app: me-admin-sdk-dotnet
   on: ${P_BRANCH}
   run: 
     - "chomd +x ./Qc.MeadminSdk.Sample"
