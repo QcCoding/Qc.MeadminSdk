@@ -1,3 +1,4 @@
+# csharp
 language: csharp
 dist: trusty
 dotnet: 2.2.0
