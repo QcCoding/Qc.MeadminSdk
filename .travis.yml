@@ -1,15 +1,11 @@
 # csharp
 language: csharp
 mono: none
-dist: trusty
 dotnet: 2.2.401-1
 
-before_install:
-  - dotnet --version
-  
 script:
-  - cd ./Qc.MeadminSdk.Sample
   - dotnet restore
+  - cd ./Qc.MeadminSdk.Sample
   - dotnet publish -c release -o ./bin/Publish -r linux-x64
     
 after_script:
