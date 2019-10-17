@@ -2,7 +2,7 @@
 language: csharp
 mono: none
 dist: trusty
-dotnet: 2.2.401
+dotnet: 2.2.401-1
 
 before_install:
   - dotnet --version
