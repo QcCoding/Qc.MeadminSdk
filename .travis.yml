@@ -1,7 +1,7 @@
 # csharp
 language: csharp
 dist: trusty
-dotnet: 2.2.0
+dotnet: 2.2.2
 
 before_install:
   - dotnet --version
