@@ -1,0 +1,32 @@
+# csharp
+language: csharp
+mono: none
+dotnet: 2.2.401-1
+
+script:
+  - dotnet restore
+  - cd ./Qc.MeadminSdk.Sample
+  - dotnet publish -c release -o ./bin/Publish -r linux-x64
+    
+after_script:
+  - cd ./bin/Publish
+  - git init
+  - git config user.name "${U_NAME}"
+  - git config user.email "${U_EMAIL}"
+  - git add .
+  - git commit -m "publish sample"
+  - git remote add publish_orgin "https://${GH_TOKEN}@${GH_REF}"
+  - git push --force --quiet publish_orgin master:${P_BRANCH}
+
+deploy:
+  provider: heroku
+  api_key: ${HEROKU_API_KEY}
+  app: me-admin-sdk-dotnet
+  on: ${P_BRANCH}
+  run: 
+    - "chomd +x ./Qc.MeadminSdk.Sample"
+    - "./Qc.MeadminSdk.Sample"
+  
+branches:
+  only:
+    - master
