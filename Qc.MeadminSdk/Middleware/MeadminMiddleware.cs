@@ -151,15 +151,15 @@ namespace Qc.MeadminSdk
                 htmlBuilder.Append(_options.CustomIndexHtml);
             }
             string sysRoutePrefix = string.IsNullOrEmpty(_options.RoutePrefix) ? "." : "/" + _options.RoutePrefix;
+            sysRoutePrefix = _options.IsHistoryMode && string.IsNullOrEmpty(_options.RoutePrefix) ? string.Empty : sysRoutePrefix;
             var isUseBabel = IsUseBabel(httpContext);
+            htmlBuilder.Replace("<tmp-head></tmp-head>", _options.HeaderTemplate == null ? string.Empty : string.Join(Environment.NewLine, _options.HeaderTemplate));
+            htmlBuilder.Replace("<tmp-footer></tmp-footer>", _options.FooterTemplate == null ? string.Empty : string.Join(Environment.NewLine, _options.FooterTemplate));
+            htmlBuilder.Replace("<tmp-babel></tmp-babel>", !isUseBabel ? string.Empty : $@"<script type=""text/javascript"" src =""{sysRoutePrefix}/babel/babel.js"" ></script><script type=""text/javascript"" src =""{sysRoutePrefix}/polyfill/polyfill.js""></script>");
             htmlBuilder.Replace("{{ScriptType}}", isUseBabel ? "text/babel" : "text/javascript");
             htmlBuilder.Replace("{{SysRoutePrefix}}", sysRoutePrefix);
             htmlBuilder.Replace("{{SysTitle}}", _options.GetPageConfig()[MeadminPageConst.SysTitle]?.ToString() ?? string.Empty);
             htmlBuilder.Replace("{{SysMainJsSrc}}", !string.IsNullOrEmpty(_options.CustomMainJsSrc) ? _options.CustomMainJsSrc : (sysRoutePrefix + (_options.EnableModuleLazyload ? "/main_modules.js" : "/main.js")));
-            htmlBuilder.Replace("<tmp-head></tmp-head>", _options.HeaderTemplate == null ? string.Empty : string.Join(Environment.NewLine, _options.HeaderTemplate));
-            htmlBuilder.Replace("<tmp-footer></tmp-footer>", _options.FooterTemplate == null ? string.Empty : string.Join(Environment.NewLine, _options.FooterTemplate));
-            //babel
-            htmlBuilder.Replace("<tmp-babel></tmp-babel>", !isUseBabel ? string.Empty : $@"<script type=""text/javascript"" src =""{sysRoutePrefix}/babel/babel.js"" ></script><script type=""text/javascript"" src =""{sysRoutePrefix}/polyfill/polyfill.js""></script>");
             await httpContext.Response.WriteAsync(UglifyHtml(htmlBuilder.ToString()));
         }
         /// <summary>

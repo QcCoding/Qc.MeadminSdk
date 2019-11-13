@@ -10,15 +10,24 @@
             mode: window.sysRouterIsHistoryMode ? 'history' : 'hash',
             base: window.sysRouterBasePath || '/',
             routes: [{
-                path: '/',
+                path: '',
                 component: { template: '<v-layout />' },
                 children: sysRoutes.filter(s => !s.meta.nolayout)
             }].concat(sysRoutes.filter(s => s.meta.nolayout)).concat([{
+                name: 'empty_all',
                 path: '*',
-                redirect: '/404',
                 meta: {
                     skipauth: true,
                     nolayout: true
+                },
+                component: {
+                    template: '<div>404 Not Found</div>',
+                    created() {
+                        console.log(this.$route);
+                        if (this.$router.options.routes.filter(s => s.name === '404').length > 0) {
+                            this.$router.push({ name: '404' })
+                        }
+                    }
                 }
             }]),
         },

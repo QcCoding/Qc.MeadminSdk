@@ -47,11 +47,20 @@ window.sysAppConfig = window.sysAppConfig || {
                             component: { template: '<v-layout />' },
                             children: mapRouteChildren(moduleName)
                         }].concat([{
+                            name: 'empty_all',
                             path: '*',
-                            redirect: '/404',
                             meta: {
                                 skipauth: true,
                                 nolayout: true
+                            },
+                            component: {
+                                template: '<div>404 Not Found</div>',
+                                created() {
+                                    console.log(this.$route);
+                                    if (this.$router.options.routes.filter(s => s.name === '404').length > 0) {
+                                        this.$router.push({ name: '404' })
+                                    }
+                                }
                             }
                         }]))
                         next(Object.assign({}, toPath, { replace: true, query: { lazyload: true } }))
@@ -66,13 +75,22 @@ window.sysAppConfig = window.sysAppConfig || {
                                 component: { template: '<v-layout />' },
                                 children: mapRouteChildren(moduleName)
                             }].concat([{
+                                name: 'empty_all',
                                 path: '*',
-                                redirect: '/404',
                                 meta: {
                                     skipauth: true,
                                     nolayout: true
+                                },
+                                component: {
+                                    template: '<div>404 Not Found</div>',
+                                    created() {
+                                        console.log(this.$route);
+                                        if (this.$router.options.routes.filter(s => s.name === '404').length > 0) {
+                                            this.$router.push({ name: '404' })
+                                        }
+                                    }
                                 }
-                                }]))
+                            }]))
                             next(Object.assign({}, toPath, { replace: true, query: { lazyload: true } }))
                         })
                     }

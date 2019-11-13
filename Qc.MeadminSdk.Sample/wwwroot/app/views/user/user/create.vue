@@ -12,7 +12,7 @@
         },
         methods: {
             submitHandler() {
-                this.$store.dispatch('removeNavTab', this.$route.name) && this.$router.back();
+                this.$store.dispatch('removeNavTab', this.$route.name)&&this.$router.back();
             }
         }
     }

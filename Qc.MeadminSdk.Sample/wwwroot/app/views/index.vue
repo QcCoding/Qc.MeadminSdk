@@ -55,7 +55,7 @@
 </template>
 <script>
     export default {
-        path: '',
+        path: '/',
         name: 'home',
         meta: {
             title: '控制台',

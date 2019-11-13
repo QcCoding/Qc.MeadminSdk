@@ -15,7 +15,6 @@
 //                children: sysRoutes.filter(s => !s.meta.nolayout)
 //            }].concat(sysRoutes.filter(s => s.meta.nolayout)).concat([{
 //                path: '*',
-//                redirect: '/404',
 //                meta: {
 //                    skipauth: true,
 //                    nolayout: true
