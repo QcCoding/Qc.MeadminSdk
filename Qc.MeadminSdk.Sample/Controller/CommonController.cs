@@ -26,6 +26,17 @@ namespace Qc.MeadminSdk.Sample.Controller
             return Ok();
         }
         /// <summary>
+        /// 桌面信息
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("test")]
+        [MeadminPermission("test", "组件测试", true)]
+        public IActionResult CompsTest()
+        {
+            return Ok();
+        }
+        /// <summary>
         /// 获取当天新增信息
         /// </summary>
         /// <returns></returns>
