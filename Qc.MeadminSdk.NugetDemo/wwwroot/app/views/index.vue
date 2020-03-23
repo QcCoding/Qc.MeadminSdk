@@ -33,8 +33,9 @@
                                           v-loading="loadingEnvData"
                                           stripe
                                           style="width: 100%">
-                                    <el-table-column prop="key"></el-table-column>
-                                    <el-table-column prop="value"></el-table-column>
+                                    <!--3.0字典类型默认为大写-->
+                                    <el-table-column prop="Key"></el-table-column>
+                                    <el-table-column prop="Value"></el-table-column>
                                 </el-table>
                             </div>
                         </el-col>

@@ -30,10 +30,10 @@ namespace Qc.MeadminSdk
         public MeadminMiddleware(
             RequestDelegate next,
             IOptions<MeadminOptions> options,
-#if NETCOREAPP3_1
-    IWebHostEnvironment hostingEnv,
+#if NETSTANDARD2_0
+    IHostingEnvironment hostingEnv,
 #else
-  IHostingEnvironment hostingEnv,
+  IWebHostEnvironment hostingEnv,
 #endif
             ILoggerFactory loggerFactory)
         {
@@ -112,10 +112,10 @@ namespace Qc.MeadminSdk
 
         private StaticFileMiddleware CreateStaticFileMiddleware(
             RequestDelegate next,
-#if NETCOREAPP3_1
-    IWebHostEnvironment hostingEnv,
+#if NETSTANDARD2_2 || NETSTANDARD2_1|| NETSTANDARD2_0
+    IHostingEnvironment hostingEnv,
 #else
-  IHostingEnvironment hostingEnv,
+  IWebHostEnvironment hostingEnv,
 #endif
             ILoggerFactory loggerFactory)
         {
