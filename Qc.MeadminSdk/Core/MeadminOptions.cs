@@ -78,7 +78,10 @@ namespace Qc.MeadminSdk
         /// 路由前缀
         /// </summary>
         public string RoutePrefix { get; set; }
-
+        /// <summary>
+        /// 主题色
+        /// </summary>
+        public string SysTheme { get; set; }
         /// <summary>
         /// 左侧导航主题
         /// </summary>
@@ -158,6 +161,7 @@ namespace Qc.MeadminSdk
                 {MeadminPageConst.LogoutPath,LogoutPath},
                 {MeadminPageConst.IndexPath,IndexPath},
                 {MeadminPageConst.SysNavTheme,SysNavTheme},
+                {MeadminPageConst.SysTheme,SysTheme},
                 {MeadminPageConst.DefaultThemeColors,DefaultThemeColors },
                 {MeadminPageConst.CustomHeaderComp,CustomHeaderComp }
             };
