@@ -7,7 +7,7 @@
                         <el-input type="text" v-model="search.keyword" clearable></el-input>
                     </el-form-item>
                     <el-button icon="el-icon-search" @click="loadSearch"></el-button>
-                    <!--<el-button icon="el-icon-search" @click="s=>this.$refs.mytable.search(s)"></el-button>-->
+                    <el-button icon="el-icon-refresh" @click="s=>this.$refs.mytable.refresh()"></el-button>
                 </el-form>
             </el-col>
             <el-col :span="6" class="text-right">

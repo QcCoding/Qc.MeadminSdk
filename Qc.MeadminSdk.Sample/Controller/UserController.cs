@@ -52,6 +52,7 @@ namespace Qc.MeadminSdk.Sample.Controller
             {
                 items = items.Where(s => s.Username.Contains(keyword) || (string.IsNullOrEmpty(s.NickName) || s.NickName.Contains(keyword))).ToList();
             }
+            var count = items.Count();
             items = items.OrderByDescending(s => s.CreatedAt)
                     .Skip(pageIndex * pageSize)
                     .Take(pageSize)
@@ -59,7 +60,7 @@ namespace Qc.MeadminSdk.Sample.Controller
             return Ok(OperateResult.Succeed("ok", new
             {
                 Items = items,
-                TotalCount = USER_LIST_DATA.Count
+                TotalCount = count
             }));
         }
         /// <summary>
